@@ -42,14 +42,22 @@ def play():
     #закрываем PyAudio
     p.terminate()
 
+# создаем базу команд
+base = ["Привет = Приветствую тебя, человек",
+        "Видишь меня? = Пока что не вижу, у меня глаз",
+        "Понимаешь меня? = Я робот, я не могу понять",
+        "Ты такой грустный = Роботы не бывают грустными",
+        "Ты робот? = Конечно робот"]
+
+# запускаем робота
+answer = "Я тебя не понимаю"
 while True:
     text = raw_input(" -> ")
-
-    if text == "ты робот?":
-        text_to_speech("А разве не видно?")
-        play()
-        print "Что нибудь еще?"
-    else:
-        text_to_speech("Не понимаю")
-        play()
-        print "Что нибудь еще?"
+    for comand in base:
+        comand = comand.split(" = ")
+        if text == comand[0]:
+            answer = comand[1]
+        elif text == "Выключись":
+            break
+    text_to_speech(answer)
+    play()
