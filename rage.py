@@ -88,7 +88,6 @@ while True:
     record()
     answer = "Я тебя не понимаю"
     text = speech_to_text()
-    print "Я услышал: ", text
     for comand in rows:
         if text == comand[0]:
             answer = comand[1]
