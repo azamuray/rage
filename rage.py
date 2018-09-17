@@ -6,6 +6,7 @@
 # 3. Затем он подключается к своей базе данных и ищет ответ на ваш текст
 # 4. Если робот нашел ответ, то он превращает его в wav-файл
 
+import time
 import pyaudio
 import wave
 import pygame
@@ -64,7 +65,7 @@ def speech_to_text():
     tr1 = tree.xpath("/recognitionResults/variant/text()")
     for string_text in tr1:
         text = string_text
-    return text
+        return text
 
 # преобразовывает текст в речь и записывает ее в wav-файл
 def text_to_speech(text):
@@ -73,9 +74,9 @@ def text_to_speech(text):
     open('play.wav', 'wb').write(get_file.content)
 
 # воспроизводит полученный wav-файл c помощью pygame
-def play():
+def play(fname):
     pygame.init()
-    pygame.mixer.Sound('play.wav').play()
+    pygame.mixer.Sound(fname).play()
 
 # делает соединение с базой данных
 connection = sqlite3.connect('base.db')
@@ -86,12 +87,18 @@ rows = cursor.fetchall()
 # запуск робота
 while True:
     record()
-    answer = "Я тебя не понимаю"
     text = speech_to_text()
-    for comand in rows:
-        if text == comand[0]:
-            answer = comand[1]
+    print "Я услышал: ", text
+    if text != None:
+        answer = "Я тебя не понимаю"
+        for command in rows:
+            if text in command[0]:
+                answer = command[1]
+        text_to_speech(answer)
+        play('play.wav')
+        time.sleep(3)
+    elif text == None:
+        play('ask.wav')
+        time.sleep(3)
     if text == u"Выключись":
         break
-    text_to_speech(answer)
-    play()
