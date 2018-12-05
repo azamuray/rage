@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Робот написан на Python 3.6
 
 # Логика ведения диалога c роботом Рэйдж:
 # 1. Робот записывает нашу речь и сохраняет в wav-файл
@@ -21,7 +21,7 @@ def record():
     CHANNELS = 2
     RATE = 44100
     RECORD_SECONDS = 3
-    WAVE_RECORD_FILENAME = "record.wav"
+    WAVE_RECORD_FILENAME = "voice/record.wav"
 
     p = pyaudio.PyAudio()
 
@@ -59,7 +59,7 @@ def speech_to_text():
     post = '/asr_xml?key=' + key + '&uuid=' + uuid + '&topic=queries'
     url = 'https://asr.yandex.net' + post
     headers = {"Content-Type": 'audio/x-wav'}
-    data = open('record.wav', 'rb').read()
+    data = open('voice/record.wav', 'rb').read()
     tmp = requests.post(url, headers=headers, data=data)
     tree = etree.XML(tmp.content)
     tr1 = tree.xpath("/recognitionResults/variant/text()")
@@ -71,7 +71,7 @@ def speech_to_text():
 def text_to_speech(text):
     url = 'https://tts.voicetech.yandex.net/tts?text='
     get_file = requests.get(url + text + '&format=wav&speaker=ermil')
-    open('play.wav', 'wb').write(get_file.content)
+    open('voice/play.wav', 'wb').write(get_file.content)
 
 # воспроизводит полученный wav-файл c помощью pygame
 def play(fname):
@@ -88,17 +88,19 @@ rows = cursor.fetchall()
 while True:
     record()
     text = speech_to_text()
-    print "Я услышал: ", text
-    if text != None:
+    print("Я услышал: ", text)
+    if text == "выключись":
+        play('voice/out.wav')
+        time.sleep(2)
+        break
+    elif text != None:
         answer = "Я тебя не понимаю"
         for command in rows:
             if text in command[0]:
                 answer = command[1]
         text_to_speech(answer)
-        play('play.wav')
+        play('voice/play.wav')
         time.sleep(3)
     elif text == None:
-        play('ask.wav')
+        play('voice/ask.wav')
         time.sleep(3)
-    if text == u"Выключись":
-        break
