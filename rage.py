@@ -6,6 +6,7 @@
 # 3. Затем он подключается к своей базе данных и ищет ответ на ваш текст
 # 4. Если робот нашел ответ, то он превращает его в wav-файл
 
+import os
 import time
 import pyaudio
 import wave
@@ -71,7 +72,7 @@ def speech_to_text():
 def text_to_speech(text):
     url = 'https://tts.voicetech.yandex.net/tts?text='
     get_file = requests.get(url + text + '&format=wav&speaker=ermil')
-    open('voice/play.wav', 'wb').write(get_file.content)
+    open('records/%s.wav' % text, 'wb').write(get_file.content)
 
 # воспроизводит полученный wav-файл c помощью pygame
 def play(fname):
@@ -81,8 +82,7 @@ def play(fname):
 # делает соединение с базой данных
 connection = sqlite3.connect('base.db')
 cursor = connection.cursor()
-cursor.execute("SELECT * FROM commands")
-rows = cursor.fetchall()
+rows = cursor.execute("SELECT * FROM commands").fetchall()
 
 # запуск робота
 while True:
@@ -105,8 +105,8 @@ while True:
         first = speech_to_text()
         print("Я услышал: ", first)
         play('voice/2.wav')
-        time.sleep(3)
-        
+        time.sleep(1)
+
         record()
         second = speech_to_text()
         print("Я услышал: ", second)
@@ -117,13 +117,20 @@ while True:
 
     elif text != None:
         answer = "Я не понимаю"
+        rows = cursor.execute("SELECT * FROM commands").fetchall()
         for command in rows:
             if text in command[0]:
                 answer = command[1]
-        text_to_speech(answer)
-        play('voice/play.wav')
+
+        exists = os.path.isfile('records/%s.wav' % answer)
+        if exists:
+            play('records/%s.wav' % answer)
+        else:
+            text_to_speech(answer)
+            play('records/%s.wav' % answer)
+            print('Я сохранил файл: %s.wav' % answer)
         time.sleep(3)
-    
+
     elif text == None:
         play('voice/ask.wav')
         time.sleep(3)
