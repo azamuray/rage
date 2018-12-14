@@ -89,18 +89,41 @@ while True:
     record()
     text = speech_to_text()
     print("Я услышал: ", text)
+    
     if text == "выключись":
         play('voice/out.wav')
         time.sleep(2)
         break
+    
+    elif text == "хочешь научиться":
+        play('voice/study.wav')
+        time.sleep(8)
+        play('voice/1.wav')
+        time.sleep(1)
+
+        record()
+        first = speech_to_text()
+        print("Я услышал: ", first)
+        play('voice/2.wav')
+        time.sleep(3)
+        
+        record()
+        second = speech_to_text()
+        print("Я услышал: ", second)
+        time.sleep(3)
+
+        cursor.execute("""INSERT INTO commands VALUES ('%s', '%s')""" % (first, second))
+        connection.commit()
+
     elif text != None:
-        answer = "Я тебя не понимаю"
+        answer = "Я не понимаю"
         for command in rows:
             if text in command[0]:
                 answer = command[1]
         text_to_speech(answer)
         play('voice/play.wav')
         time.sleep(3)
+    
     elif text == None:
         play('voice/ask.wav')
         time.sleep(3)
