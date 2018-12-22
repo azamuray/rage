@@ -32,7 +32,7 @@ def record():
                     input=True,
                     frames_per_buffer=CHUNK)
 
-    print("* идет запись звука")
+    print("Rage слушает...")
 
     frames = []
 
@@ -40,7 +40,7 @@ def record():
         data = stream.read(CHUNK)
         frames.append(data)
 
-    print("* запись остановлена")
+    print("Rage думает...")
 
     stream.stop_stream()
     stream.close()
@@ -86,15 +86,21 @@ rows = cursor.execute("SELECT * FROM commands").fetchall()
 
 # запуск робота
 while True:
+
+    # приветствие
+    play('voice/welcome.wav')
+    time.sleep(2)
     record()
     text = speech_to_text()
     print("Я услышал: ", text)
     
+    # выключение робота
     if text == "выключись":
         play('voice/out.wav')
         time.sleep(2)
         break
     
+    # обучение робота
     elif text == "хочешь научиться":
         play('voice/study.wav')
         time.sleep(8)
@@ -115,6 +121,7 @@ while True:
         cursor.execute("""INSERT INTO commands VALUES ('%s', '%s')""" % (first, second))
         connection.commit()
 
+    # поиск и сравнение по БД
     elif text != None:
         answer = "Я не понимаю"
         rows = cursor.execute("SELECT * FROM commands").fetchall()
@@ -131,6 +138,7 @@ while True:
             print('Я сохранил файл: %s.wav' % answer)
         time.sleep(3)
 
+    # робот задает вопрос
     elif text == None:
         play('voice/ask.wav')
         time.sleep(3)
