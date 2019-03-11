@@ -84,61 +84,76 @@ connection = sqlite3.connect('base.db')
 cursor = connection.cursor()
 rows = cursor.execute("SELECT * FROM commands").fetchall()
 
-# запуск робота
-while True:
 
-    # приветствие
-    play('voice/welcome.wav')
-    time.sleep(2)
+# запуск
+while True:
     record()
     text = speech_to_text()
-    print("Я услышал: ", text)
+    print(text)
+    if text == "rage":
+        # запуск робота
+        while True:
+
+            # приветствие
+            play('voice/welcome.wav')
+            time.sleep(2)
+            record()
+            text = speech_to_text()
+            print("Я услышал: ", text)
+            
+            # выключение робота
+            if text == "выключись":
+                play('voice/out.wav')
+                time.sleep(2)
+                break
+            
+            # обучение робота
+            elif text == "хочешь научиться":
+                play('voice/study.wav')
+                time.sleep(8)
+                play('voice/1.wav')
+                time.sleep(1)
+
+                record()
+                first = speech_to_text()
+                print("Я услышал: ", first)
+                play('voice/2.wav')
+                time.sleep(1)
+
+                record()
+                second = speech_to_text()
+                print("Я услышал: ", second)
+                time.sleep(3)
+
+                cursor.execute("""INSERT INTO commands VALUES ('%s', '%s')""" % (first, second))
+                connection.commit()
+
+            # переходит в спящий режим
+            elif text == "перестань слушать":
+                break
+                time.sleep(2)
+
+            # поиск и сравнение по БД
+            elif text != None:
+                answer = "Я не понимаю"
+                rows = cursor.execute("SELECT * FROM commands").fetchall()
+                for command in rows:
+                    if text in command[0]:
+                        answer = command[1]
+
+                exists = os.path.isfile('records/%s.wav' % answer)
+                if exists:
+                    play('records/%s.wav' % answer)
+                else:
+                    text_to_speech(answer)
+                    play('records/%s.wav' % answer)
+                    print('Я сохранил файл: %s.wav' % answer)
+                time.sleep(3)
+
+            # робот задает вопрос
+            elif text == None:
+                play('voice/ask.wav')
+                time.sleep(3)
     
-    # выключение робота
-    if text == "выключись":
-        play('voice/out.wav')
-        time.sleep(2)
-        break
-    
-    # обучение робота
-    elif text == "хочешь научиться":
-        play('voice/study.wav')
-        time.sleep(8)
-        play('voice/1.wav')
-        time.sleep(1)
-
-        record()
-        first = speech_to_text()
-        print("Я услышал: ", first)
-        play('voice/2.wav')
-        time.sleep(1)
-
-        record()
-        second = speech_to_text()
-        print("Я услышал: ", second)
-        time.sleep(3)
-
-        cursor.execute("""INSERT INTO commands VALUES ('%s', '%s')""" % (first, second))
-        connection.commit()
-
-    # поиск и сравнение по БД
-    elif text != None:
-        answer = "Я не понимаю"
-        rows = cursor.execute("SELECT * FROM commands").fetchall()
-        for command in rows:
-            if text in command[0]:
-                answer = command[1]
-
-        exists = os.path.isfile('records/%s.wav' % answer)
-        if exists:
-            play('records/%s.wav' % answer)
-        else:
-            text_to_speech(answer)
-            play('records/%s.wav' % answer)
-            print('Я сохранил файл: %s.wav' % answer)
-        time.sleep(3)
-
-    # робот задает вопрос
-    elif text == None:
-        play('voice/ask.wav')
-        time.sleep(3)
+    else:
+        print("Rage слушает...")

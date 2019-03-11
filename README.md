@@ -32,7 +32,7 @@ Arduino используется для подсветки диодов, а му
 
 Прежде, чем запустить робота, вы должны установить библиотеки с помощью этих команд:
 
-      $ sudo apt-get install python-pip portaudio19-dev
+      $ sudo apt-get install python3-pip portaudio19-dev
       $ pip install pyaudio pygame requests lxml
 
 После того, как вы установите эти пакеты (библиотеки), можете смело запускать робота.
