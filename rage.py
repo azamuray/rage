@@ -9,6 +9,7 @@
 import os
 import time
 import sqlite3
+import random
 from modules import module
 
 # делает соединение с базой данных
@@ -19,16 +20,23 @@ rows = cursor.execute("SELECT * FROM commands").fetchall()
 # запуск
 while True:
 
+    # запись речи
     module.record()
     text = module.speech_to_text()
     print(text)
     
     if text == "rage":
+
+        hello = False
         while True:
-        
+            
             # приветствие
-            module.play('voice/welcome.wav')
-            time.sleep(2)
+            if hello == False:
+                hello = True
+                module.play('voice/welcome.wav')
+                time.sleep(2)
+            
+            # запись речи
             module.record()
             text = module.speech_to_text()
             print("Я услышал: ", text)
@@ -81,11 +89,23 @@ while True:
                 module.play('voice/ask.wav')
                 time.sleep(3)
 
+
     # выключение
     elif text == "выключись":
         module.play('voice/out.wav')
         time.sleep(2)
         break
+
+    if text == None:
+        rows = cursor.execute("SELECT * FROM phrases").fetchall()
+        id = 0
+        for command in rows:
+            id += 1
+            if id == random.randint(1, len(rows)):
+                answer = command[0]
+                module.text_to_speech(answer)
+                module.play('records/%s.wav' % answer)
+                time.sleep(3)
 
     else:
         print("Rage слушает...")
