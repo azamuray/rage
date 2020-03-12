@@ -1,47 +1,46 @@
 # Робот написан на Python 3.6
 
 # Логика ведения диалога c роботом Рэйдж:
-# 1. Робот записывает нашу речь и сохраняет в wav-файл
+# 1. Робот записывает речь и сохраняет в wav-файл
 # 2. После чего он преобразовывает сохраненный wav-файл в текст
-# 3. Затем он подключается к своей базе данных и ищет ответ на ваш текст
-# 4. Если робот нашел ответ, то он превращает его в wav-файл
+# 3. Затем он подключается к своей базе данных и ищет ответ на ваш запрос
+# 4. Если робот нашел ответ, то он превращает его в wav-файл и воспроизводит
 
 import os
 import time
-import sqlite3
 import random
 from modules import module
 
-# делает соединение с базой данных
-connection = sqlite3.connect('base.db')
-cursor = connection.cursor()
-rows = cursor.execute("SELECT * FROM commands").fetchall()
+from database.database import CommandManager, PhraseManager
 
-# запуск
+
+command = CommandManager()
+phrase = PhraseManager()
+
+# Запуск
 while True:
 
-    # запись речи
+    # Запись речи
     module.record()
     text = module.speech_to_text()
     print(text)
     
     if text == "rage":
-
         hello = False
         while True:
             
-            # приветствие
+            # Приветствие
             if hello == False:
                 hello = True
                 module.play('voice/welcome.wav')
                 time.sleep(2)
             
-            # запись речи
+            # Запись речи
             module.record()
             text = module.speech_to_text()
             print("Я услышал: ", text)
             
-            # обучение робота
+            # Обучение робота
             if text == "хочешь научиться":
                 module.play('voice/study.wav')
                 time.sleep(8)
@@ -59,21 +58,20 @@ while True:
                 print("Я услышал: ", second)
                 time.sleep(3)
 
-                cursor.execute("""INSERT INTO commands VALUES ('%s', '%s')""" % (first, second))
-                connection.commit()
+                command.create_command(first, second)
 
-            # переходит в спящий режим
+            # Переходит в спящий режим
             elif text == "перестань слушать":
                 break
                 time.sleep(2)
 
-            # поиск и сравнение по БД
+            # Поиск и сравнение по БД
             elif text != None:
                 answer = "Я не понимаю"
-                rows = cursor.execute("SELECT * FROM commands").fetchall()
-                for command in rows:
-                    if text in command[0]:
-                        answer = command[1]
+                command_list = command.get_command_list()
+                for i in command_list:
+                    if text in i[0]:
+                        answer = i[1]
 
                 exists = os.path.isfile('records/%s.wav' % answer)
                 if exists:
@@ -84,25 +82,25 @@ while True:
                     print('Я сохранил файл: %s.wav' % answer)
                 time.sleep(3)
 
-            # робот задает вопрос
+            # Робот задает вопрос
             elif text == None:
                 module.play('voice/ask.wav')
                 time.sleep(3)
 
 
-    # выключение
+    # Выключение
     elif text == "выключись":
         module.play('voice/out.wav')
         time.sleep(2)
         break
 
     if text == None:
-        rows = cursor.execute("SELECT * FROM phrases").fetchall()
+        phrase_list = phrase.get_phrase_list()
         id = 0
-        for command in rows:
+        for i in phrase_list:
             id += 1
-            if id == random.randint(1, len(rows)):
-                answer = command[0]
+            if id == random.randint(1, len(phrase_list)):
+                answer = i[1]
                 module.text_to_speech(answer)
                 module.play('records/%s.wav' % answer)
                 time.sleep(3)
