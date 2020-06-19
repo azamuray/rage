@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/azamatmurdalov/rage/master/rage.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/azamatmurdalov/rage/master/logo.png"></p>
 
 # Robot Rage / Робот Рэйдж
 
