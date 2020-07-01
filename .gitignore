@@ -1,3 +1,4 @@
 *.pyc
-/records
+/records/
+/voice/record.wav
 __pycache__
