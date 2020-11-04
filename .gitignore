@@ -1,4 +1,5 @@
 *.pyc
+__pycache__
 /records/
 /voice/record.wav
-__pycache__
+base.db
