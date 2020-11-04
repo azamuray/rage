@@ -4,8 +4,8 @@ import sqlite3
 class ConnectDB:
     """Подключение к базе данных."""
 
-    datebase = 'base.db'
-    connection = sqlite3.connect(datebase)
+    database = 'base.db'
+    connection = sqlite3.connect(database)
     cursor = connection.cursor()
 
 
@@ -16,6 +16,16 @@ class Cursor(ConnectDB):
         """Метод для отправки запросов."""
 
         return self.cursor.execute(query)
+
+    def create_table(self, table, values):
+        """Метод для создания таблицы, если ее не существует."""
+
+        query = f"""SELECT name FROM sqlite_master
+                    WHERE type='table'
+                    AND name='{table}'"""
+        if self.make_query(query).fetchone() is None:
+            query = f"CREATE TABLE {table} ({values})"
+            self.make_query(query)
 
     def get_all_records(self, table):
         """Метод для получения всех записей."""
@@ -34,10 +44,14 @@ class Cursor(ConnectDB):
 class CommandManager(Cursor):
     """Класс для работы с таблицей Commands."""
 
-    table = 'commands'
+    table = "commands"
+    values = "question text, answer text"
 
     def get_command_list(self):
         """Метод для получения записей из таблицы Commands."""
+
+        # создается таблица, если ее не существует
+        self.create_table(self.table, self.values)
 
         return self.get_all_records(self.table)
 
@@ -51,8 +65,12 @@ class PhraseManager(Cursor):
     """Класс для работы с таблицей Phrases."""
 
     table = 'phrases'
+    values = "phrase text"
 
     def get_phrase_list(self):
         """Метод для получения записей из таблицы Phrases."""
+
+        # создается таблица, если ее не существует
+        self.create_table(self.table, self.values)
 
         return self.get_all_records(self.table)
