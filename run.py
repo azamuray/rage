@@ -1,10 +1,9 @@
-# Робот написан на Python 3.6
+# Робот написан на Python 3.8.5
 
-# Логика ведения диалога c роботом Рэйдж:
-# 1. Робот записывает речь и сохраняет в wav-файл
-# 2. После чего он преобразовывает сохраненный wav-файл в текст
-# 3. Затем он подключается к своей базе данных и ищет ответ на ваш запрос
-# 4. Если робот нашел ответ, то он превращает его в wav-файл и воспроизводит
+# Логика ведения диалога c роботом Rage:
+# 1. Робот записывает речь и переводит в текст
+# 2. Затем он подключается к своей базе данных и ищет ответ на ваш запрос
+# 3. Если робот нашел ответ, то он превращает его в wav-файл и воспроизводит
 
 import os
 import time
@@ -13,7 +12,6 @@ import pyaudio
 import json
 
 from vosk import Model, KaldiRecognizer
-
 
 from modules import module
 from database.database import CommandManager, PhraseManager
@@ -43,14 +41,12 @@ class Command(CommandManager):
         module.play('voice/1.wav')
         time.sleep(1)
 
-        module.record()
-        first = module.speech_to_text()
+        first = self.speech_record()
         print("Я услышал: ", first)
         module.play('voice/2.wav')
         time.sleep(1)
 
-        module.record()
-        second = module.speech_to_text()
+        second = self.speech_record()
         print("Я услышал: ", second)
         time.sleep(3)
 
@@ -72,6 +68,14 @@ class Command(CommandManager):
             print('Я сохранил файл: %s.wav' % answer)
         time.sleep(3)
 
+    def speech_record(self):
+        while True:
+            data = stream.read(4000)
+            if rec.AcceptWaveform(data):
+                text = json.loads(rec.Result())['text']
+                if text != "":
+                    return text
+
 
 class Rage():
 
@@ -82,17 +86,13 @@ class Rage():
         module.play('voice/welcome.wav')
         time.sleep(2)
 
+        command = Command()
+
         while self.power:
 
-            command = Command()
+            text = command.speech_record()
 
-            text = self.speech_record()
-
-            if text == "":
-                print("Rage: пока что тихо")
-                continue
-
-            elif text == "перестань слушать":
+            if text == "перестань слушать":
                 self.power = False
 
             elif text == "хочешь научиться":
@@ -110,13 +110,6 @@ class Rage():
         module.play('voice/out.wav')
         time.sleep(2)
 
-    def speech_record(self):
-        data = stream.read(4000)
-        if rec.AcceptWaveform(data):
-            text = json.loads(rec.Result())['text']
-            return text
-        return ""
-
 
 if __name__ == '__main__':
 
@@ -132,11 +125,13 @@ if __name__ == '__main__':
     stream.start_stream()
 
     rage = Rage()
+    command = Command()
 
     while not rage.power:
 
-        text = rage.speech_record()
+        text = command.speech_record()
         print(f"Человек: {text}")
+
         if text == 'rage' or text == 'рэй':
             rage.input()
 
