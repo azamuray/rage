@@ -9,8 +9,13 @@
 import os
 import time
 import random
-from modules import module
+import pyaudio
+import json
 
+from vosk import Model, KaldiRecognizer
+
+
+from modules import module
 from database.database import CommandManager, PhraseManager
 
 
@@ -83,13 +88,18 @@ class Rage():
 
             text = self.speech_record()
 
-            if text == "перестань слушать":
+            if text == "":
+                print("Rage: пока что тихо")
+                continue
+
+            elif text == "перестань слушать":
                 self.power = False
 
             elif text == "хочешь научиться":
                 command.add_answer()
 
             elif text != None:
+                print(f"Человек: {text}")
                 command.get_answer(text)
 
             elif text == None:
@@ -101,21 +111,33 @@ class Rage():
         time.sleep(2)
 
     def speech_record(self):
-        module.record()
-        text = module.speech_to_text()
-        print(text)
-        return text
+        data = stream.read(4000)
+        if rec.AcceptWaveform(data):
+            text = json.loads(rec.Result())['text']
+            return text
+        return ""
 
 
 if __name__ == '__main__':
+
+    model = Model("speech_to_text")
+    rec = KaldiRecognizer(model, 16000)
+
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16,
+                    channels=1,
+                    rate=16000,
+                    input=True,
+                    frames_per_buffer=8000)
+    stream.start_stream()
 
     rage = Rage()
 
     while not rage.power:
 
         text = rage.speech_record()
-
-        if text == 'rage':
+        print(f"Человек: {text}")
+        if text == 'rage' or text == 'рэй':
             rage.input()
 
         elif text == 'выключись':
