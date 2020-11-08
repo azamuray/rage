@@ -9,6 +9,7 @@ import os
 import time
 import random
 import pyaudio
+import pygame
 import json
 
 from vosk import Model, KaldiRecognizer
@@ -17,9 +18,21 @@ from modules import module
 from database.database import CommandManager, PhraseManager
 
 
+class Base():
+
+    def waiting(self, record):
+        """Выключение микрофона во время воспроизведения."""
+        pygame.mixer.init()
+        seconds = pygame.mixer.Sound(record).get_length()
+        stream.stop_stream()
+        time.sleep(seconds)
+        stream.start_stream()
+
+
 class Phrase(PhraseManager):
 
     phrase = PhraseManager()
+    base = Base()
 
     def get_phrase(self):
         phrase_list = self.phrase.get_phrase_list()
@@ -29,26 +42,32 @@ class Phrase(PhraseManager):
             if id == random.randint(1, len(phrase_list)):
                 answer = i[1]
                 module.text_to_speech(answer)
-                module.play('records/%s.wav' % answer)
-                time.sleep(3)
+                answer_record = 'records/%s.wav' % answer
+                module.play(answer_record)
+                self.base.waiting(answer_record)
 
 
 class Command(CommandManager):
 
+    base = Base()
+
     def add_answer(self):
-        module.play('voice/study.wav')
-        time.sleep(8)
-        module.play('voice/1.wav')
-        time.sleep(1)
+        answer_record = 'voice/study.wav'
+        module.play(answer_record)
+        self.base.waiting(answer_record)
+
+        answer_record = 'voice/1.wav'
+        module.play(answer_record)
+        self.base.waiting(answer_record)
 
         first = self.speech_record()
         print("Я услышал: ", first)
-        module.play('voice/2.wav')
-        time.sleep(1)
+        answer_record = 'voice/2.wav'
+        module.play(answer_record)
+        self.base.waiting(answer_record)
 
         second = self.speech_record()
         print("Я услышал: ", second)
-        time.sleep(3)
 
         self.create_command(first, second)
 
@@ -61,12 +80,15 @@ class Command(CommandManager):
 
         exists = os.path.isfile('records/%s.wav' % answer)
         if exists:
-            module.play('records/%s.wav' % answer)
+            answer_record = 'records/%s.wav' % answer
+            module.play(answer_record)
+            self.base.waiting(answer_record)
         else:
             module.text_to_speech(answer)
-            module.play('records/%s.wav' % answer)
+            answer_record = 'records/%s.wav' % answer
+            module.play(answer_record)
+            self.base.waiting(answer_record)
             print('Я сохранил файл: %s.wav' % answer)
-        time.sleep(3)
 
     def speech_record(self):
         while True:
@@ -80,11 +102,13 @@ class Command(CommandManager):
 class Rage():
 
     power = False
+    base = Base()
 
     def input(self):
         self.power = True
-        module.play('voice/welcome.wav')
-        time.sleep(2)
+        answer_record = 'voice/welcome.wav'
+        module.play(answer_record)
+        self.base.waiting(answer_record)
 
         command = Command()
 
@@ -107,8 +131,9 @@ class Rage():
                 time.sleep(3)
 
     def output(self):
-        module.play('voice/out.wav')
-        time.sleep(2)
+        answer_record = 'voice/out.wav'
+        module.play(answer_record)
+        self.base.waiting(answer_record)
 
 
 if __name__ == '__main__':
@@ -135,7 +160,7 @@ if __name__ == '__main__':
         if text == 'rage' or text == 'рэй':
             rage.input()
 
-        elif text == 'выключись':
+        elif text == 'отключайся':
             rage.output()
             break
 
