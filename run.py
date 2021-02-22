@@ -14,7 +14,11 @@ import json
 from vosk import Model, KaldiRecognizer
 
 from modules import module
-from database.database import CommandManager
+from db.database import Session
+from db.models import Command
+
+
+session = Session()
 
 
 class Base():
@@ -28,7 +32,7 @@ class Base():
         stream.start_stream()
 
 
-class Command(CommandManager):
+class Voice():
 
     base = Base()
 
@@ -50,14 +54,15 @@ class Command(CommandManager):
         second = self.speech_record()
         print("Я услышал: ", second)
 
-        self.create_command(first, second)
+        session.add(Command(question=first, answer=second))
+
 
     def get_answer(self, text):
         answer = "Я не понимаю"
-        command_list = self.get_command_list()
-        for i in command_list:
-            if text in i[0]:
-                answer = i[1]
+        commands = session.query(Command).all()
+        for instance in commands:
+            if text in instance.question:
+                answer = instance.answer
 
         exists = os.path.isfile('records/%s.wav' % answer)
         if exists:
@@ -91,7 +96,7 @@ class Rage():
         module.play(answer_record)
         self.base.waiting(answer_record)
 
-        command = Command()
+        command = Voice()
 
         while self.power:
 
@@ -131,14 +136,14 @@ if __name__ == '__main__':
     stream.start_stream()
 
     rage = Rage()
-    command = Command()
+    command = Voice()
 
     while not rage.power:
 
         text = command.speech_record()
         print(f"Человек: {text}")
 
-        if text == 'rage' or text == 'рэй':
+        if text == 'rage' or text == 'рэй' or text == 'меня слышно':
             rage.input()
 
         elif text == 'отключайся':
