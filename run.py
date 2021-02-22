@@ -7,7 +7,6 @@
 
 import os
 import time
-import random
 import pyaudio
 import pygame
 import json
@@ -15,7 +14,7 @@ import json
 from vosk import Model, KaldiRecognizer
 
 from modules import module
-from database.database import CommandManager, PhraseManager
+from database.database import CommandManager
 
 
 class Base():
@@ -27,24 +26,6 @@ class Base():
         stream.stop_stream()
         time.sleep(seconds)
         stream.start_stream()
-
-
-class Phrase(PhraseManager):
-
-    phrase = PhraseManager()
-    base = Base()
-
-    def get_phrase(self):
-        phrase_list = self.phrase.get_phrase_list()
-        id = 0
-        for i in phrase_list:
-            id += 1
-            if id == random.randint(1, len(phrase_list)):
-                answer = i[1]
-                module.text_to_speech(answer)
-                answer_record = 'records/%s.wav' % answer
-                module.play(answer_record)
-                self.base.waiting(answer_record)
 
 
 class Command(CommandManager):
@@ -163,7 +144,3 @@ if __name__ == '__main__':
         elif text == 'отключайся':
             rage.output()
             break
-
-        elif text == None:
-            phrase = Phrase()
-            phrase.get_phrase()

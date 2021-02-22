@@ -59,18 +59,3 @@ class CommandManager(Cursor):
         """Метод для создания записи в таблице Commands."""
 
         return self.create_record(self.table, question, answer)
-
-
-class PhraseManager(Cursor):
-    """Класс для работы с таблицей Phrases."""
-
-    table = 'phrases'
-    values = "phrase text"
-
-    def get_phrase_list(self):
-        """Метод для получения записей из таблицы Phrases."""
-
-        # создается таблица, если ее не существует
-        self.create_table(self.table, self.values)
-
-        return self.get_all_records(self.table)
