@@ -92,43 +92,34 @@ class Voice(Base):
 
 class Rage(Voice):
 
-    power = False
+    power = True
+    command = None
 
     def __init__(self):
-        while not self.power:
-            command = self.speech_record()
-            start_commands = ("робот", "robot", "rage", "рэй", "меня слышно",)
-            end_commands = ("отключайся", "отключись", "выключись",)
-            print(f"Человек: {command}")
-
-            if command in start_commands:
-                self.input()
-            elif command in end_commands:
-                self.output()
-                break
-
-    def input(self):
-        self.power = True
         answer_record = 'voice/welcome.wav'
         module.play(answer_record)
         self.waiting(answer_record)
 
+    def on(self, command: str = None):
         while self.power:
+            self.command = command if command else self.speech_record()
 
-            command = self.speech_record()
+            exit_commands = ("отключайся", "отключись", "выключись", "перестань слушать", "заткнись",)
 
-            if command:
-                print(f"Человек: {command}")
-                self.get_answer(command)
-            elif not command:
-                module.play('voice/ask.wav')
-                time.sleep(3)
-            elif command == "перестань слушать":
+            if not self.command:
+                answer_record = 'voice/ask.wav'
+                module.play(answer_record)
+                self.waiting(answer_record)
+            elif self.command in exit_commands:
+                self.off()
                 self.power = False
-            elif command == "хочешь научиться":
+            elif command:
+                print(f"Человек: {self.command}")
+                self.get_answer(self.command)
+            elif self.command == "хочешь научиться":
                 self.add_answer()
 
-    def output(self):
+    def off(self):
         answer_record = 'voice/out.wav'
         module.play(answer_record)
         self.waiting(answer_record)
@@ -137,3 +128,4 @@ class Rage(Voice):
 if __name__ == '__main__':
 
     rage = Rage()
+    rage.on()
