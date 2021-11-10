@@ -12,6 +12,6 @@ PyAudio==0.2.11
 pygame==2.0.0
 requests==2.26.0
 SQLAlchemy==1.4.26
-urllib3==1.25.11
+urllib3==1.26.5
 vosk==0.3.15
 zipp==3.6.0
