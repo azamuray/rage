@@ -113,11 +113,11 @@ class Rage(Voice):
             elif self.command in exit_commands:
                 self.off()
                 self.power = False
-            elif command:
-                print(f"Человек: {self.command}")
-                self.get_answer(self.command)
             elif self.command == "хочешь научиться":
                 self.add_answer()
+            elif self.command:
+                print(f"Человек: {self.command}")
+                self.get_answer(self.command)
 
     def off(self):
         answer_record = 'voice/out.wav'
