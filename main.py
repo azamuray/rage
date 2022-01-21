@@ -96,6 +96,9 @@ class Rage(Voice):
     command = None
 
     def __init__(self):
+        if not os.path.isdir("records"):
+            os.mkdir("records")
+
         answer_record = 'voice/welcome.wav'
         module.play(answer_record)
         self.waiting(answer_record)
