@@ -2,7 +2,8 @@
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   sudo apt install python3-pip portaudio19-dev
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  brew install python3-pip portaudio
+  brew install python3-pip
+  brew install portaudio
 else
   echo "Failed to determine the OS"
 fi
